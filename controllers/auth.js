@@ -6,22 +6,35 @@ const { read, save } = require("../helpers/rw")
 
 // 2. Perform your endpoint handling. Router gives access to all HTTP methods
 router.post("/register", (req, res) => {
-    // Initially reads users db (returns [] if empty)
-    const allUsers = read(users)
-    const newUser = req.body
+    try {
+        // Object destructuring our body
+        const { fullName, age, email, password } = req.body
 
-    // appends to the array anything from the request object
-    allUsers.push(newUser)
+        if (!fullName || !age || !email || !password) {
+            throw new Error(`Please provide full name, age, email, and password`)
+        }
 
-    // saves it to the json (and overwrites it.)
-    save(allUsers, users)
+        const allUsers = read(users)
+        const newUser = {fullName, age, email, password}
+    
+        // appends to the array anything from the request object
+        allUsers.push(newUser)
+    
+        // saves it to the json (and overwrites it.)
+        save(allUsers, users)
+    
+        // returns response with a result
+        res.status(201).json({
+            message: `User created`,
+            newUser
+        })
 
-    // returns response with a result
-    res.status(201).json({
-        message: `User created`,
-        newUser
-    })
-
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({
+            error: `${err}`
+        })
+    }
 })
 
 router.post("/login", (req, res) => {
