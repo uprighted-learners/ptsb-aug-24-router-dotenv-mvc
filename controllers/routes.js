@@ -101,7 +101,44 @@ router.get("/:id", (req, res) => {
 });
 
 router.put("/:id", (req, res) => {
-    res.send("Updating one sports teams");
+    try {
+        // destructure the id
+        const { id } = req.params
+        
+        // check if id is a UUID or GUID
+        if (!uuidValidate(id)) {
+            throw new Error(`Please provide a valid UUID or GUID`)
+        }
+
+        const db = read(dbPath)
+        const foundIndex = db.findIndex(i => i.id === id)
+        
+        if (foundIndex === -1) {
+            throw new Error(`${id} not found`)
+        }
+
+        db[foundIndex].teamName = req.body.teamName ?? db[foundIndex].teamName
+        db[foundIndex].sportType = req.body.sportType ?? db[foundIndex].sportType
+        db[foundIndex].founded = req.body.founded ?? db[foundIndex].founded
+        db[foundIndex].location = req.body.location ?? db[foundIndex].location
+        db[foundIndex].achievements = req.body.achievements ?? db[foundIndex].achievements
+        db[foundIndex].championships = req.body.championships ?? db[foundIndex].championships
+        db[foundIndex].famousPlayers = req.body.famousPlayers ?? db[foundIndex].famousPlayers
+
+        save(db, dbPath)
+
+        res.status(200).json({
+            message: `Modified`,
+            db: db[foundIndex]
+        })
+
+        
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({
+            error: `${err}`
+        })
+    }
 });
 
 router.delete("/:id", (req, res) => {
