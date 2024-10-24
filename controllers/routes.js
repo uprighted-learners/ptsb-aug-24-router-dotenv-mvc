@@ -72,16 +72,28 @@ router.post("/create", (req, res) => {
 
 router.get("/:id", (req, res) => {
     try {
+        // destructure the id
         const { id } = req.params
-        console.log(id)
         
+        // check if id is a UUID or GUID
         if (!uuidValidate(id)) {
             throw new Error(`Please provide a valid UUID or GUID`)
         }
 
-        
+        const db = read(dbPath)
+
+        // Check if id matches one in the db
+        const foundEntry = db.filter(i => i.id === id)
+
+        // Handle something not found
+        if (!foundEntry.length) {
+            throw new Error(`No entry found`)
+        }
+
+        res.status(200).json(...foundEntry)
 
     } catch(err) {
+        console.log(err)
         res.status(500).json({
             error: `${err}`
         })
