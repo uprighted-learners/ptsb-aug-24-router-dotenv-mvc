@@ -1,32 +1,99 @@
+const router = require("express").Router();
+const { v4: uuid_v4, validate: uuidValidate} = require("uuid");
+const { read, save } = require("../helpers/rw");
+const dbPath = "./db/db.json";
+
 /* 
-    Create boilerplate for a few CRUD routes for our sports
-    * need an endpoint for getting all sports teams
-    * need an endpoint to get one team (id)
-    * need an endpoint to update a team (id)
-    * need an endpoint to delete a team (id)
-    * all of those should be subroutes of /api endpoint
+    Team Name
+    Sport Type
+    Founded
+    Location
+    Achievements
+    Championships
+    Famous Players
 */
 
-const router = require("express").Router()
-
 router.get("/", (req, res) => {
-    res.send("Getting all sports teams")
-})
+	try {
+        const db = read(dbPath)
+        if (!db.length) {
+            throw new Error(`Empty database. Say waaaaa?!`)
+        }
+
+        res.status(200).json(db)
+
+    } catch(err) {
+        res.status(500).json({
+            error: `${err}`
+        })
+    }
+});
 
 router.post("/create", (req, res) => {
-    res.send("Created a sports team")
-})
+	try {
+		// create an id for the entry
+		const id = uuid_v4();
+		const {
+			teamName,
+			sportType,
+			founded,
+			location,
+			achievements,
+			championships,
+			famousPlayers,
+		} = req.body;
+
+		if (
+			!teamName ||
+			!sportType ||
+			!founded ||
+			!location ||
+			!achievements ||
+			!championships ||
+			!famousPlayers
+		) {
+            throw new Error(`Please provide all properties`)
+		}
+        
+        const db = read(dbPath)
+        db.push({ id, ...req.body })
+        save(db, dbPath)
+
+        res.status(201).json({
+            message: `Sports team created`
+        })
+
+	} catch (err) {
+        res.status(500).json({
+            error: `${err}`
+        })
+    }
+});
 
 router.get("/:id", (req, res) => {
-    res.send("Getting one sports teams")
-})
+    try {
+        const { id } = req.params
+        console.log(id)
+        
+        if (!uuidValidate(id)) {
+            throw new Error(`Please provide a valid UUID or GUID`)
+        }
+
+        
+
+    } catch(err) {
+        res.status(500).json({
+            error: `${err}`
+        })
+    }
+});
 
 router.put("/:id", (req, res) => {
-    res.send("Updating one sports teams")
-})
+	res.send("Updating one sports teams");
+});
 
 router.delete("/:id", (req, res) => {
-    res.send("Deleting one sports teams")
-})
+	res.send("Deleting one sports teams");
+});
 
-module.exports = router
+module.exports = router;
