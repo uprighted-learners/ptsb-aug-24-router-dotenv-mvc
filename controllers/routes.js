@@ -111,12 +111,17 @@ router.put("/:id", (req, res) => {
         }
 
         const db = read(dbPath)
+        // We grab index of where data resides
         const foundIndex = db.findIndex(i => i.id === id)
         
+        // it .findIndex returns -1 if nothing's found
         if (foundIndex === -1) {
             throw new Error(`${id} not found`)
         }
 
+        // Reassign db values in our copy of the db
+        // Only reassign if they exist using Nullish Coalescing operator
+        // works like an expression and returns the side that's truthy
         db[foundIndex].teamName = req.body.teamName ?? db[foundIndex].teamName
         db[foundIndex].sportType = req.body.sportType ?? db[foundIndex].sportType
         db[foundIndex].founded = req.body.founded ?? db[foundIndex].founded
