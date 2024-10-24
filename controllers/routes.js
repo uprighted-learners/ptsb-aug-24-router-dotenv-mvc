@@ -79,19 +79,19 @@ router.get("/:id", (req, res) => {
         if (!uuidValidate(id)) {
             throw new Error(`Please provide a valid UUID or GUID`)
         }
-
+        
         const db = read(dbPath)
-
+        
         // Check if id matches one in the db
         const foundEntry = db.filter(i => i.id === id)
-
+        
         // Handle something not found
         if (!foundEntry.length) {
             throw new Error(`No entry found`)
         }
-
+        
         res.status(200).json(...foundEntry)
-
+        
     } catch(err) {
         console.log(err)
         res.status(500).json({
@@ -101,11 +101,39 @@ router.get("/:id", (req, res) => {
 });
 
 router.put("/:id", (req, res) => {
-	res.send("Updating one sports teams");
+    res.send("Updating one sports teams");
 });
 
 router.delete("/:id", (req, res) => {
-	res.send("Deleting one sports teams");
+    try {
+        const { id } = req.params
+        
+        if (!uuidValidate(id)) {
+            throw new Error(`Please provide a valid UUID or GUID`)
+        }
+        
+        const db = read(dbPath)
+        
+        // Check if id matches one in the db
+        const rest = db.filter(i => i.id !== id)
+        
+        // Handle something not found
+        if (db.length === rest.length) {
+            throw new Error(`No entry found`)
+        }
+
+        save(rest, dbPath)
+
+        res.status(200).json({
+            message: `${id} removed from the db`
+        })
+
+    } catch(err) {
+        console.log(err)
+        res.status(500).json({
+            error: `${err}`
+        })
+    }
 });
 
 module.exports = router;
