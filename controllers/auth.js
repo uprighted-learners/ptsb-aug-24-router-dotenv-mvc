@@ -1,11 +1,11 @@
 // 1. import express router
 const router = require("express").Router()
-const users = `./db/users.json`
-const { read, save } = require("../helpers/rw")
+
+const User = require("../models/user")
 
 
 // 2. Perform your endpoint handling. Router gives access to all HTTP methods
-router.post("/register", (req, res) => {
+router.post("/register", async (req, res) => {
     try {
         // Object destructuring our body
         const { fullName, age, email, password } = req.body
@@ -14,14 +14,8 @@ router.post("/register", (req, res) => {
             throw new Error(`Please provide full name, age, email, and password`)
         }
 
-        const allUsers = read(users)
-        const newUser = {fullName, age, email, password}
-    
-        // appends to the array anything from the request object
-        allUsers.push(newUser)
-    
-        // saves it to the json (and overwrites it.)
-        save(allUsers, users)
+        const newUser = new User({ fullName, age, email, password })
+        await newUser.save()
     
         // returns response with a result
         res.status(201).json({

@@ -6,6 +6,7 @@ const PORT = process.env.PORT
 const HOST = process.env.HOST
 
 // 4. Import the auth controller
+const { dbConnect }= require("./db")
 const authController = require("./controllers/auth")
 const routesController = require("./controllers/routes")
 
@@ -18,6 +19,7 @@ app.use("/auth", authController)
 app.use("/api", routesController)
 
 app.listen(PORT, HOST, () => {
+    dbConnect()
     console.log(`[server] listening on ${HOST}:${PORT}`)
 })
 
