@@ -1,6 +1,7 @@
 // 1. import express router
 const router = require("express").Router()
-
+// ? [Step 4]
+// Import our model to use it to connect between db and the client
 const User = require("../models/user")
 
 
@@ -13,8 +14,9 @@ router.post("/register", async (req, res) => {
         if (!fullName || !age || !email || !password) {
             throw new Error(`Please provide full name, age, email, and password`)
         }
-
+        // Create a new instance of model
         const newUser = new User({ fullName, age, email, password })
+        // Save our model to the db
         await newUser.save()
     
         // returns response with a result

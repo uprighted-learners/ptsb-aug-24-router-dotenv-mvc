@@ -1,8 +1,13 @@
+// ? [STEP 3]
+// Import datbase
 const { mongoose } = require("../db")
 
+// Schema defines how Collection data will be structured
 const User = new mongoose.Schema(
     {
+        // Properties (columns) of Document entry into User Collection
         fullName: {
+            // Validators (allow verification of many variables)
             type: String,
             required: true,
             unique: false
@@ -24,7 +29,9 @@ const User = new mongoose.Schema(
             required: true
         }
     },
+    // Adds createdAt and updatedAt values to our document entries
     { timestamps: true }
 )
-console.log("potato 3000")
+
+// Export creates a model of the schema to be used in our controllers
 module.exports = mongoose.model("user", User)

@@ -1,26 +1,12 @@
 const router = require("express").Router();
-const { v4: uuid_v4, validate: uuidValidate} = require("uuid");
-const { read, save } = require("../helpers/rw");
-const dbPath = "./db/db.json";
+const Team = require("../models/team")
 
-/* 
-    Team Name
-    Sport Type
-    Founded
-    Location
-    Achievements
-    Championships
-    Famous Players
-*/
-
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
 	try {
-        const db = read(dbPath)
-        if (!db.length) {
-            throw new Error(`Empty database. Say waaaaa?!`)
-        }
+        const allItems = await Team.find()
+        console.log(allItems)
 
-        res.status(200).json(db)
+        res.status(200).json(allItems)
 
     } catch(err) {
         res.status(500).json({
@@ -29,10 +15,9 @@ router.get("/", (req, res) => {
     }
 });
 
-router.post("/create", (req, res) => {
+router.post("/create", async (req, res) => {
 	try {
 		// create an id for the entry
-		const id = uuid_v4();
 		const {
 			teamName,
 			sportType,
@@ -55,12 +40,12 @@ router.post("/create", (req, res) => {
             throw new Error(`Please provide all properties`)
 		}
         
-        const db = read(dbPath)
-        db.push({ id, ...req.body })
-        save(db, dbPath)
+        const newEntry = new Team(req.body)
+        await newEntry.save()
 
         res.status(201).json({
-            message: `Sports team created`
+            message: `Sports team created`,
+            newEntry
         })
 
 	} catch (err) {
@@ -70,27 +55,19 @@ router.post("/create", (req, res) => {
     }
 });
 
-router.get("/:id", (req, res) => {
+router.get("/:id", async (req, res) => {
     try {
         // destructure the id
         const { id } = req.params
+
+        // You can grab items by many different methods (filter with find or findOne)
+        // const foundItem = await Team.findOne({ _id: id })
+        const foundItem = await Team.findById(id)
+
+        // ! REMEMBER different methods return empty different (null vs [] vs -1)
+        if (!foundItem) throw new Error(`None found`)
         
-        // check if id is a UUID or GUID
-        if (!uuidValidate(id)) {
-            throw new Error(`Please provide a valid UUID or GUID`)
-        }
-        
-        const db = read(dbPath)
-        
-        // Check if id matches one in the db
-        const foundEntry = db.filter(i => i.id === id)
-        
-        // Handle something not found
-        if (!foundEntry.length) {
-            throw new Error(`No entry found`)
-        }
-        
-        res.status(200).json(...foundEntry)
+        res.status(200).json(foundItem)
         
     } catch(err) {
         console.log(err)
