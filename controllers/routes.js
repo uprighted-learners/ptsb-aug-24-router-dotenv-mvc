@@ -77,41 +77,28 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
     try {
         // destructure the id
         const { id } = req.params
         
-        // check if id is a UUID or GUID
-        if (!uuidValidate(id)) {
-            throw new Error(`Please provide a valid UUID or GUID`)
-        }
-
-        const db = read(dbPath)
-        // We grab index of where data resides
-        const foundIndex = db.findIndex(i => i.id === id)
-        
-        // it .findIndex returns -1 if nothing's found
-        if (foundIndex === -1) {
-            throw new Error(`${id} not found`)
-        }
-
         // Reassign db values in our copy of the db
         // Only reassign if they exist using Nullish Coalescing operator
         // works like an expression and returns the side that's truthy
-        db[foundIndex].teamName = req.body.teamName ?? db[foundIndex].teamName
-        db[foundIndex].sportType = req.body.sportType ?? db[foundIndex].sportType
-        db[foundIndex].founded = req.body.founded ?? db[foundIndex].founded
-        db[foundIndex].location = req.body.location ?? db[foundIndex].location
-        db[foundIndex].achievements = req.body.achievements ?? db[foundIndex].achievements
-        db[foundIndex].championships = req.body.championships ?? db[foundIndex].championships
-        db[foundIndex].famousPlayers = req.body.famousPlayers ?? db[foundIndex].famousPlayers
 
-        save(db, dbPath)
+        const updatedEntry = await Team.findByIdAndUpdate(id, {
+            teamName: req.body.teamName ?? teamName,
+            sportType: req.body.sportType ?? sportType,
+            founded: req.body.founded ?? founded,
+            location: req.body.location ?? location,
+            achievements: req.body.achievements ?? achievements,
+            championships: req.body.championships ?? championships,
+            famousPlayers: req.body.famousPlayers ?? famousPlayers,
+        })
 
         res.status(200).json({
             message: `Modified`,
-            db: db[foundIndex]
+            updatedEntry
         })
 
         
@@ -123,28 +110,18 @@ router.put("/:id", (req, res) => {
     }
 });
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
     try {
         const { id } = req.params
         
-        if (!uuidValidate(id)) {
-            throw new Error(`Please provide a valid UUID or GUID`)
-        }
+        const deletedEntry = await Team.findByIdAndDelete(id)
         
-        const db = read(dbPath)
+        if (!deletedEntry) throw new Error(`Item not found`)
         
-        // Check if id matches one in the db
-        const rest = db.filter(i => i.id !== id)
-        
-        // Handle something not found
-        if (db.length === rest.length) {
-            throw new Error(`No entry found`)
-        }
-
-        save(rest, dbPath)
 
         res.status(200).json({
-            message: `${id} removed from the db`
+            message: `${id} removed from the db`,
+            deletedEntry
         })
 
     } catch(err) {

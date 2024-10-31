@@ -33,16 +33,7 @@ router.post("/register", async (req, res) => {
     }
 })
 
-router.post("/login", (req, res) => {
-    // TODO: try your shot at reading your database and returning its contents to the client
-    // get request email and password values
-    // read the databse
-    // check if they match with db entries
-    // check if they exist
-    // check if password matches
-    // send login response
-    // wrap it in try catch and send different errors as responses
-
+router.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body
 
@@ -50,20 +41,14 @@ router.post("/login", (req, res) => {
             throw new Error(`Please provide email & password`)
         }
 
-        const allUsers = read(users)
-
-        const foundUser = allUsers.filter(usr => usr.email === email)
-
-        if (!foundUser.length) {
-            throw new Error(`User not found`)
-        }
-
-        if (foundUser[0].password !== password) {
-            throw new Error(`Incorrect Password`)
-        }
+        const foundUser = await User.findOne({ email })
+        
+        if (!foundUser) throw new Error(`User not found`)
+        
+        if (foundUser.password !== password) throw new Error("Invalid password")
 
         res.status(200).json({
-            message: `${email} logged in`
+            message: `${foundUser.email} logged in`
         })
 
     } catch(err) {
