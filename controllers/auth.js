@@ -9,6 +9,12 @@ const bcrypt = require("bcrypt");
 // Import salt value for our hash
 const SALT = Number(process.env.SALT);
 
+// Import JSON Web Token post installation
+const jwt = require("jsonwebtoken")
+
+// Import your top secret key to verify your tokens
+const JWT_KEY = process.env.JWT_KEY
+
 // 2. Perform your endpoint handling. Router gives access to all HTTP methods
 router.post("/register", async (req, res) => {
 	try {
@@ -29,10 +35,21 @@ router.post("/register", async (req, res) => {
 		// Save our model to the db
 		await newUser.save();
 
+        // Generate our JWT
+        const token = jwt.sign(
+            // payload
+            { _id: newUser._id },
+            // secret key
+            JWT_KEY,
+            // options for our token
+            { expiresIn: 60 * 60 * 24 }
+        )
+
 		// returns response with a result
 		res.status(201).json({
 			message: `User created`,
 			newUser,
+            token
 		});
 	} catch (err) {
 		console.log(err);
@@ -59,8 +76,19 @@ router.post("/login", async (req, res) => {
         
 		if (!verifiedPwd) throw new Error("Invalid password");
 
+        // Generate our JWT
+        const token = jwt.sign(
+            // payload
+            { _id: foundUser._id },
+            // secret key
+            JWT_KEY,
+            // options for our token
+            { expiresIn: 60 * 60 * 24 }
+        )
+
 		res.status(200).json({
 			message: `${foundUser.email} logged in`,
+            token
 		});
 	} catch (err) {
 		console.log(err);
