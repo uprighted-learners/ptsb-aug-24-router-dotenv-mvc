@@ -9,6 +9,7 @@ const HOST = process.env.HOST
 // ? [STEP 2]
 // Import destructured dbConnect
 const { dbConnect }= require("./db")
+const sessionValidation = require("./middlewares/session")
 const authController = require("./controllers/auth")
 const routesController = require("./controllers/routes")
 
@@ -18,7 +19,7 @@ app.use(express.urlencoded({ extended: true }))
 // 5. Assign it to the middleware method
 // can add main route to .use() to make everything sub routes
 app.use("/auth", authController)
-app.use("/api", routesController)
+app.use("/api", sessionValidation, routesController)
 
 app.listen(PORT, HOST, () => {
     // Invoke it each time our server runs

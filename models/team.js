@@ -1,7 +1,15 @@
-const { mongoose } = require("../db")
+const { mongoose, Schema } = require("../db")
 
 const Team = new mongoose.Schema(
     {
+        userID: {
+            type: Object,
+            required: true
+        },
+        fullName: {
+            type: String,
+            required: true
+        },
         teamName: {
             type: String,
             required: true
